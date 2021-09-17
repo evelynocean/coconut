@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package = "./;coconut";
+
+package coconut;
+
+service Coconut {
+    rpc Ping(PingRequest) returns (Pong){}
+    // 更新統計點數
+    rpc UpdatePoints(PointsRequest) returns (RetResultStatus){}
+    // 取得點數統計狀況
+    rpc GetPoints(GetPointsRequest) returns (RetPoints){}
+}
+
+message PingRequest {}
+
+message Pong {
+    string pong = 1;
+}
+
+// 更新統計點數參數
+message PointsRequest {
+    string level_1 = 1; // 第一層, 最上層代號
+    string level_2 = 2; // 第二層代號
+    string level_3 = 3; // 第三層代號
+    string user_name = 4;  // 操作員代號
+    int32 point = 5; // 施作點數
+}
+
+message RetResultStatus {
+    bool success = 1; // 回傳處理結果
+}
+
+message PointInfo {
+    string name = 1; // 層級名稱
+    int32 points = 2; // 點數
+}
+
+message RetPoints {
+    repeated PointInfo data = 1; // 回傳當前資料
+}
+
+message GetPointsRequest {
+    string level_1 = 1; // 第一層, 最上層代號
+    string level_2 = 2; // 第二層代號
+    string level_3 = 3; // 第三層代號
+}
