@@ -1,0 +1,25 @@
+workspace:
+  base: /go
+  path: src/${DRONE_REPO_NAME}
+
+kind: pipeline
+name: backend
+clone:
+  skip_verify: true
+steps:
+- name: golang_test
+  image: golang:1.14.8-alpine3.11
+  environment:
+    CGO_ENABLED: 0
+  commands:
+    - go test -mod=vendor -cover
+
+- name: golangci-lint
+  image: gcr.io/rd2-test/golangci-lint:latest
+  commands:
+    - golangci-lint run
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
