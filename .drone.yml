@@ -14,7 +14,7 @@ steps:
     GO111MODULE: on
   commands:
     - go get -u --insecure ./...
-    - go test -cover
+    - go test -mod=vendor -cover
 
 - name: golangci-lint
   image: golangci/golangci-lint:v1.23.3-alpine
