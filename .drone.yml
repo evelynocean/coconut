@@ -18,6 +18,6 @@ steps:
     - go test -mod=vendor -cover
 
 - name: golangci-lint
-  image: golangci/golangci-lint:v1.23.3-alpine
+  image: golangci/golangci-lint:v1.42.1-alpine
   commands:
     - golangci-lint run
