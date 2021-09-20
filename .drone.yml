@@ -8,15 +8,15 @@ name: backend
 
 steps:
 - name: golang_test
-  image: golang:1.14.8-alpine3.11
+  image: golang:1.16
+  environment:
+    CGO_ENABLED: 0
+    GO111MODULE: on
   commands:
-    - go test -mod=vendor -cover
+    - go get -u--insecure ./...
+    - go test -cover
 
 - name: golangci-lint
-  image: gcr.io/rd2-test/golangci-lint:latest
+  image: golangci/golangci-lint:v1.23.3-alpine
   commands:
     - golangci-lint run
-- name: build
-  image: golang:latest
-  commands:
-    - go build -a -mod vendor
