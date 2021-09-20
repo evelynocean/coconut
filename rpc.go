@@ -31,7 +31,7 @@ func (s *server) UpdatePoints(ctx context.Context, in *coconut.PointsRequest) (r
 			"response":     r,
 		}).Debugf("test")
 
-		// HandlerPanicRecover(&err)
+		HandlerPanicRecover(&err)
 	}()
 
 	// TODO: input data check
@@ -81,7 +81,7 @@ func (s *server) GetPoints(ctx context.Context, in *coconut.GetPointsRequest) (r
 			"response":     r,
 		}).Debugf("test")
 
-		// HandlerPanicRecover(&err)
+		HandlerPanicRecover(&err)
 	}()
 
 	if in.Level_1 == "" || in.Level_2 == "" || in.Level_3 == "" {
