@@ -17,7 +17,7 @@ steps:
     - go mod vendor
     - cd lib/error
     - go test -cover
-    - cd ../lib
+    - cd ../log
     - go test -cover
 
 - name: golangci-lint
