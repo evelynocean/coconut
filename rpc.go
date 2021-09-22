@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"regexp"
-	"strconv"
 	"time"
 
 	coconutError "github.com/evelynocean/coconut/lib/error"
@@ -49,17 +48,14 @@ func (s *server) UpdatePoints(ctx context.Context, in *coconut.PointsRequest) (r
 	keys := coconut_redis.GetPointKey(sets)
 	limitSettings, err := coconut_model.GetLimit(s.ScyllaSession)
 
-	for idx, v := range keys {
-		limit := limitSettings[strconv.Itoa(idx)]
-		err = coconut_redis.PointSet(s.RedisClient, v, int(in.Point), time.Duration(30)*time.Second, limit)
-		if err != nil {
-			Logger.WithFields(map[string]interface{}{
-				"test": 111,
-				"time": time.Now().UnixNano(),
-				"err:": err.Error(),
-			}).Errorf("testError")
-			return nil, coconutError.ParseError(coconutError.ErrRedis, err)
-		}
+	err = coconut_redis.PointSetBatch(s.RedisClient, keys, int(in.Point), limitSettings, 30)
+	if err != nil {
+		Logger.WithFields(map[string]interface{}{
+			"test": 111,
+			"time": time.Now().UnixNano(),
+			"err:": err.Error(),
+		}).Errorf("testError")
+		return nil, coconutError.ParseError(coconutError.ErrRedis, err)
 	}
 
 	r = &coconut.RetResultStatus{
