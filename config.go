@@ -26,4 +26,5 @@ type Config struct {
 	CqlConnectTimeout   int
 	CqlMaxPreparedStmts int
 	CqlNumConns         int
+	Environment         string
 }

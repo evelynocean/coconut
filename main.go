@@ -162,4 +162,8 @@ func envInit(c *cli.Context) {
 		return
 	}
 
+	config.Environment = os.Getenv("ENVIRONMENT")
+	if config.Environment == "" {
+		config.Environment = "local"
+	}
 }

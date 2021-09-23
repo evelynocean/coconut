@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	coconut_model "github.com/evelynocean/coconut/model"
 	coconut "github.com/evelynocean/coconut/pb"
 )
 
@@ -52,6 +53,12 @@ func start(c *cli.Context) {
 	}
 	// 要有取到連線 session.Close才不會噴錯
 	defer session.Close()
+
+	if config.Environment == "local" {
+		coconut_model.InitMock()
+	} else {
+		coconut_model.Init(session)
+	}
 
 	sv := &server{
 		ScyllaSession: session,

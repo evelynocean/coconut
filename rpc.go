@@ -46,8 +46,9 @@ func (s *server) UpdatePoints(ctx context.Context, in *coconut.PointsRequest) (r
 		UserName: in.UserName,
 	}
 	keys := coconut_redis.GetPointKey(sets)
-	limitSettings, err := coconut_model.GetLimit(s.ScyllaSession)
 
+	limitSettings, err := coconut_model.LimitSQL.GetLimit()
+	// fmt.Println("::::::: ", config.Environment, " :::::::: ", limitSettings)
 	err = coconut_redis.PointSetBatch(s.RedisClient, keys, int(in.Point), limitSettings, 30)
 	if err != nil {
 		Logger.WithFields(map[string]interface{}{
