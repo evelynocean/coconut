@@ -5,19 +5,12 @@ import (
 )
 
 type Config struct {
-	Listen       string
-	Worker       *requestwork.Worker
-	RedisAddr    string
-	RedisMaxIdle int
-	RedisMaxConn int
-	RedisNo      int
-	// MysqlSlow     time.Duration
-	// MasterAddr    string
-	// MasterMaxIdle int
-	// MasterMaxConn int
-	// SlaveAddr     string
-	// SlaveMaxIdle  int
-	// SlaveMaxConn  int
+	Listen              string
+	Worker              *requestwork.Worker
+	RedisAddr           string
+	RedisMaxIdle        int
+	RedisMaxConn        int
+	RedisNo             int
 	CqlClusterAddrs     []string
 	CqlKeyspace         string
 	CqlPort             int
@@ -27,4 +20,6 @@ type Config struct {
 	CqlMaxPreparedStmts int
 	CqlNumConns         int
 	Environment         string
+	HealthPort          string
+	HealthPath          string
 }

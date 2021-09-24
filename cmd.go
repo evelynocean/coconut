@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +14,7 @@ import (
 
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/sirupsen/logrus"
 	"github.com/syhlion/gocql"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
@@ -71,7 +75,11 @@ func start(c *cli.Context) {
 		"config": config,
 		"time":   time.Now().UnixNano(),
 	}).Errorf("start msg")
+
 	grpcServer := runGrpcServer(shutdownObserver, sv)
+
+	// health check
+	go runHealth()
 
 	/** 監聽信號
 	  SIGHUP 終端控制進程結束(終端連接斷開)
@@ -83,10 +91,16 @@ func start(c *cli.Context) {
 
 	//阻塞直到有信號傳入
 	s := <-shutdownObserver
-	fmt.Println(`Receive signal:`, s)
+	Logger.Debugf(`Receive signal: %s`, s)
 
 	// 優雅停止GRPC服務
 	grpcServer.GracefulStop()
+
+	// 避免有執行完的動作，休息一下再退出
+	for t := 10; t > 0; t-- {
+		log.Printf("休息%d秒後準備退出", t)
+		time.Sleep(time.Second * 1)
+	}
 }
 
 // newRedisConnection ...
@@ -141,4 +155,33 @@ func runGrpcServer(c chan<- os.Signal, sr *server) *grpc.Server {
 	}(gs, c)
 
 	return gs
+}
+
+func runHealth() {
+	started := time.Now()
+	connSelf, err := grpc.Dial("localhost"+config.Listen, grpc.WithInsecure())
+
+	if err != nil {
+		Logger.WithFields(map[string]interface{}{"error": err}).Errorf("連線失敗")
+	}
+
+	coco := coconut.NewCoconutClient(connSelf)
+
+	Logger.Debugf("Healthy API is Running at port: %s", config.HealthPort)
+	http.HandleFunc(config.HealthPath, func(w http.ResponseWriter, r *http.Request) {
+		// 確認gRPC服務有通
+		ping, err := coco.Ping(context.Background(), &coconut.PingRequest{})
+		if err == nil {
+			w.WriteHeader(200)
+			data := fmt.Sprintf("Already run: %v", time.Since(started))
+			if _, errw := w.Write([]byte(data)); errw != nil {
+				Logger.WithFields(map[string]interface{}{"error": errw}).Errorf("runHealth")
+			}
+		} else {
+			w.WriteHeader(500)
+			Logger.Errorf("Service Not Ready yet, ping: %#v, err: %s", ping, err.Error())
+		}
+	})
+
+	logrus.Fatal(http.ListenAndServe(":"+config.HealthPort, nil))
 }

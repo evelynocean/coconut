@@ -166,4 +166,14 @@ func envInit(c *cli.Context) {
 	if config.Environment == "" {
 		config.Environment = "local"
 	}
+
+	config.HealthPort = os.Getenv("HEALTH_PORT")
+	if config.HealthPort == "" {
+		config.HealthPort = "8881"
+	}
+
+	config.HealthPath = os.Getenv("HEALTH_CHECK_PATH")
+	if config.HealthPath == "" {
+		config.HealthPath = "./health_check"
+	}
 }
