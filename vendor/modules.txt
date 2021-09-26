@@ -29,6 +29,9 @@ github.com/hailocab/go-hostpool
 # github.com/joho/godotenv v1.3.0
 ## explicit
 github.com/joho/godotenv
+# github.com/nsqio/go-nsq v1.0.8
+## explicit
+github.com/nsqio/go-nsq
 # github.com/onsi/gomega v1.16.0
 ## explicit
 # github.com/russross/blackfriday/v2 v2.0.1

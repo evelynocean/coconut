@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
+	nsq "github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 	"github.com/syhlion/gocql"
 	"github.com/urfave/cli"
@@ -27,6 +28,7 @@ import (
 type server struct {
 	ScyllaSession *gocql.Session
 	RedisClient   *redis.Client
+	NsqProducer   *nsq.Producer
 }
 
 func start(c *cli.Context) {
@@ -58,6 +60,16 @@ func start(c *cli.Context) {
 	// 要有取到連線 session.Close才不會噴錯
 	defer session.Close()
 
+	// nsq producer
+	nsqProducer, err := newNSQProducer(config.NsqdAddr)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		nsqProducer.Stop()
+	}()
+
 	if config.Environment == "local" {
 		coconut_model.InitMock()
 	} else {
@@ -67,6 +79,7 @@ func start(c *cli.Context) {
 	sv := &server{
 		ScyllaSession: session,
 		RedisClient:   redisClient,
+		NsqProducer:   nsqProducer,
 	}
 
 	startStr, err := json.Marshal(config)
@@ -184,4 +197,35 @@ func runHealth() {
 	})
 
 	logrus.Fatal(http.ListenAndServe(":"+config.HealthPort, nil))
+}
+
+func newNSQProducer(addr string) (r *nsq.Producer, err error) {
+	NSQconfig := nsq.NewConfig()
+	err = NSQconfig.Set("max_in_flight", config.NsqdMaxInFlight)
+	if err != nil {
+		Logger.WithFields(map[string]interface{}{
+			"err":           err,
+			"now_time":      time.Now().UnixNano(),
+			"max_in_flight": config.NsqdMaxInFlight,
+		}).Debugf("newNSQProducer")
+
+		return
+	}
+
+	r, err = nsq.NewProducer(addr, NSQconfig)
+	if err != nil {
+		Logger.Errorf(`%s`, `nsq.NewProducer`)
+
+		return
+	}
+
+	err = r.Ping()
+
+	if err != nil {
+		Logger.Errorf(`%s`, `nsq Ping`)
+
+		return
+	}
+
+	return r, err
 }

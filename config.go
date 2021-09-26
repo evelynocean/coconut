@@ -22,4 +22,6 @@ type Config struct {
 	Environment         string
 	HealthPort          string
 	HealthPath          string
+	NsqdAddr            string
+	NsqdMaxInFlight     int
 }

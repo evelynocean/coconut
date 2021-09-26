@@ -176,4 +176,10 @@ func envInit(c *cli.Context) {
 	if config.HealthPath == "" {
 		config.HealthPath = "./health_check"
 	}
+
+	config.NsqdAddr = os.Getenv("NSQ_NSQD_ADDR")
+	if config.NsqdAddr == "" {
+		err = errors.New(`env NSQ_NSQD_ADDR empty`)
+		return
+	}
 }

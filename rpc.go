@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -57,6 +59,36 @@ func (s *server) UpdatePoints(ctx context.Context, in *coconut.PointsRequest) (r
 			"err:": err.Error(),
 		}).Errorf("testError")
 		return nil, coconutError.ParseError(coconutError.ErrRedis, err)
+	}
+
+	// NSQ發送 各層級
+	var data []*coconut.PointInfo
+	reg := regexp.MustCompile(`^LEVEL.*:(\w+)$`)
+
+	for _, v := range keys {
+		resultPoint, err := coconut_redis.PointGet(s.RedisClient, v)
+		if err != nil {
+			return nil, coconutError.ParseError(coconutError.ErrRedis, err)
+		}
+		if resultPoint > 0 {
+			matchSlice := reg.FindStringSubmatch(v)
+			d := &coconut.PointInfo{
+				Name:   matchSlice[1],
+				Points: int32(resultPoint),
+			}
+			data = append(data, d)
+		}
+	}
+
+	str, err := json.Marshal(data)
+	fmt.Println(":::::: str:", string(str), ", err:", err)
+	if err != nil {
+		return nil, coconutError.ParseError(coconutError.ErrServer, err)
+	}
+
+	err = s.NsqProducer.Publish("COCONUT_UPDATE_POINT", []byte(str))
+	if err != nil {
+		return nil, coconutError.ParseError(coconutError.ErrServer, err)
 	}
 
 	r = &coconut.RetResultStatus{
