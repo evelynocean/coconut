@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
+	"github.com/bwmarrin/snowflake"
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
 	nsq "github.com/nsqio/go-nsq"
@@ -82,8 +83,6 @@ func start(c *cli.Context) {
 		NsqProducer:   nsqProducer,
 	}
 
-	startStr, err := json.Marshal(config)
-	fmt.Println("start msg:", string(startStr))
 	Logger.WithFields(map[string]interface{}{
 		"config": config,
 		"time":   time.Now().UnixNano(),
@@ -93,6 +92,23 @@ func start(c *cli.Context) {
 
 	// health check
 	go runHealth()
+
+	// nsq consumer
+	// snowflakeNode, graceful shutdown 使用
+	snowflakeNode, err := newSnowFlake()
+	if err != nil {
+		return
+	}
+	// 建立空白設定檔。
+	ConsumerConfig := nsq.NewConfig()
+	// 設置重連時間
+	ConsumerConfig.LookupdPollInterval = time.Second * 2
+	consumer, _ := nsq.NewConsumer("COCONUT_UPDATE_POINT", "coconut", ConsumerConfig)
+	consumer.AddConcurrentHandlers(TestNSQConsumer(), config.NsqConsumerWorkers)
+	err = consumer.ConnectToNSQLookupd(config.NsqLookupdAddr)
+	if err != nil {
+		return
+	}
 
 	/** 監聽信號
 	  SIGHUP 終端控制進程結束(終端連接斷開)
@@ -108,6 +124,34 @@ func start(c *cli.Context) {
 
 	// 優雅停止GRPC服務
 	grpcServer.GracefulStop()
+
+	var (
+		wg                  sync.WaitGroup
+		stopOnSignalExitNCL = NsqConsumerList{} // 收集停止訊號時停止nsq consumer 的列表
+	)
+
+	stopOnSignalExitNCL.Set(snowflakeNode.Generate().Int64(), consumer)
+	// 停止部分Nsq Consumer避免有訊息進來
+	Logger.Debugf("停止部分Nsq Consumer避免有訊息進來...")
+
+	err = stopOnSignalExitNCL.Each(func(c *nsq.Consumer) error {
+		wg.Add(1)
+		go func(c *nsq.Consumer, wg *sync.WaitGroup) {
+			// 停止訊號會等待正在處理的訊息做完才結束
+			c.Stop()
+			<-c.StopChan
+			wg.Done()
+		}(c, &wg)
+
+		return nil
+	})
+
+	if err != nil {
+		Logger.Errorf("stopOnSignalExitNCL.Each err: %s", err.Error())
+	}
+
+	wg.Wait()
+	Logger.Debugf("停止 NSQ Consumer完成...")
 
 	// 避免有執行完的動作，休息一下再退出
 	for t := 10; t > 0; t-- {
@@ -214,18 +258,24 @@ func newNSQProducer(addr string) (r *nsq.Producer, err error) {
 
 	r, err = nsq.NewProducer(addr, NSQconfig)
 	if err != nil {
-		Logger.Errorf(`%s`, `nsq.NewProducer`)
-
 		return
 	}
 
 	err = r.Ping()
 
 	if err != nil {
-		Logger.Errorf(`%s`, `nsq Ping`)
-
 		return
 	}
 
 	return r, err
+}
+
+// newSnowFlake ...
+func newSnowFlake() (node *snowflake.Node, err error) {
+	// nodeID for 測試用 直接使用 1
+	node, err = snowflake.NewNode(int64(1))
+	if err != nil {
+		return
+	}
+	return
 }

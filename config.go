@@ -24,4 +24,6 @@ type Config struct {
 	HealthPath          string
 	NsqdAddr            string
 	NsqdMaxInFlight     int
+	NsqLookupdAddr      string
+	NsqConsumerWorkers  int
 }

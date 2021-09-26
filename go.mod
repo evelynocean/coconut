@@ -3,6 +3,7 @@ module github.com/evelynocean/coconut
 go 1.16
 
 require (
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gocql/gocql v0.0.0-20210817081954-bc256bbb90de // indirect

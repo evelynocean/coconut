@@ -182,4 +182,16 @@ func envInit(c *cli.Context) {
 		err = errors.New(`env NSQ_NSQD_ADDR empty`)
 		return
 	}
+
+	config.NsqLookupdAddr = os.Getenv("NSQ_NSQLOOKUPD_ADDR")
+	if config.NsqLookupdAddr == "" {
+		err = errors.New(`env NSQ_NSQLOOKUPD_ADDR empty`)
+		return
+	}
+
+	config.NsqConsumerWorkers, err = strconv.Atoi(os.Getenv("NSQ_CONSUMER_WORKERS"))
+	if err != nil {
+		err = errors.New(`env NSQ_CONSUMER_WORKERS empty`)
+		return
+	}
 }
