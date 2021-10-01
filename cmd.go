@@ -15,6 +15,7 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
+	tgBot "github.com/go-telegram-bot-api/telegram-bot-api"
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 	"github.com/syhlion/gocql"
@@ -26,10 +27,16 @@ import (
 	coconut "github.com/evelynocean/coconut/pb"
 )
 
+const (
+	TgBotChatID = 20422915
+	TgBotToken  = "20289---:-----"
+)
+
 type server struct {
 	ScyllaSession *gocql.Session
 	RedisClient   *redis.Client
 	NsqProducer   *nsq.Producer
+	Bot           *tgBot.BotAPI
 }
 
 func start(c *cli.Context) {
@@ -77,10 +84,16 @@ func start(c *cli.Context) {
 		coconut_model.Init(session)
 	}
 
+	bot, err := tgBot.NewBotAPI(TgBotToken)
+	if err != nil {
+		Logger.Errorf("NewBotAPI err: %s", err.Error())
+	}
+
 	sv := &server{
 		ScyllaSession: session,
 		RedisClient:   redisClient,
 		NsqProducer:   nsqProducer,
+		Bot:           bot,
 	}
 
 	Logger.WithFields(map[string]interface{}{

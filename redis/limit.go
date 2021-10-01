@@ -35,7 +35,7 @@ type LimitSetting struct {
 }
 
 // set point
-func PointSetBatch(conn *redis.Client, keys []string, point int, limitSetting map[string]int, expired int) (err error) {
+func PointSetBatch(conn *redis.Client, keys []string, point int, limitSetting map[string]int, expired int) (reply string, err error) {
 
 	tmp := &LimitSetting{
 		Level1: limitSetting["0"],
@@ -83,15 +83,15 @@ func PointSetBatch(conn *redis.Client, keys []string, point int, limitSetting ma
 	`
 	script, err := conn.ScriptLoad(luaScript).Result()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	_, err = conn.EvalSha(script, keys, point, tmp.MarshalBinary(), expired).Result()
+	reply, err = conn.EvalSha(script, keys, point, tmp.MarshalBinary(), expired).String()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return
+	return reply, err
 }
 
 func (s *LimitSetting) MarshalBinary() (ret string) {

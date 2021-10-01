@@ -51,7 +51,7 @@ func (s *server) UpdatePoints(ctx context.Context, in *coconut.PointsRequest) (r
 
 	limitSettings, err := coconut_model.LimitSQL.GetLimit()
 	// fmt.Println("::::::: ", config.Environment, " :::::::: ", limitSettings)
-	err = coconut_redis.PointSetBatch(s.RedisClient, keys, int(in.Point), limitSettings, 30)
+	reply, err := coconut_redis.PointSetBatch(s.RedisClient, keys, int(in.Point), limitSettings, 30)
 	if err != nil {
 		Logger.WithFields(map[string]interface{}{
 			"test": 111,
@@ -61,6 +61,18 @@ func (s *server) UpdatePoints(ctx context.Context, in *coconut.PointsRequest) (r
 		return nil, coconutError.ParseError(coconutError.ErrRedis, err)
 	}
 
+	if reply != "ok" {
+		fmt.Println(" 踩到限額 發TG", reply, ", err:", err)
+
+		// msg := tgBot.NewMessage(TgBotChatID, fmt.Sprintf("踩到限額: %s", reply))
+		// _, err := s.Bot.Send(msg)
+		// if err != nil {
+		// 	Logger.WithFields(map[string]interface{}{
+		// 		"err:": err.Error(),
+		// 	}).Errorf("Bot.Send")
+		// }
+
+	}
 	// NSQ發送 各層級
 	var data []*coconut.PointInfo
 	reg := regexp.MustCompile(`^LEVEL.*:(\w+)$`)

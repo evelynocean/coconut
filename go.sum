@@ -35,6 +35,8 @@ github.com/go-redis/redis v6.15.9+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8w
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
+github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible h1:2cauKuaELYAEARXRkq2LrJ0yDDv1rW7+wrTEdVL3uaU=
+github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible/go.mod h1:qf9acutJ8cwBUhm1bqgz6Bei9/C/c93FPDljKWwsOgM=
 github.com/gocql/gocql v0.0.0-20210817081954-bc256bbb90de h1:J7nwGjNyfkF+hTmpFPp/nvQrfQ2i19/7yWNb8c4YNnI=
 github.com/gocql/gocql v0.0.0-20210817081954-bc256bbb90de/go.mod h1:3gM2c4D3AnkISwBxGnMMsS8Oy4y2lhbPRsH4xnJrHG8=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
@@ -110,6 +112,8 @@ github.com/syhlion/gocql v0.0.0-20200110005259-60bc650ed690 h1:Zkfqxs+S2NMc6txIy
 github.com/syhlion/gocql v0.0.0-20200110005259-60bc650ed690/go.mod h1:FGEJCBcsVk7egA+LMIEOcFxOLSnhogWaQjj5/6y8VG8=
 github.com/syhlion/requestwork.v2 v0.0.0-20210119021838-2bc6ad110469 h1:5KJZhQ/N/srLf5X/I6TldAs11aC5Ki6OjxlIuRAJ+ns=
 github.com/syhlion/requestwork.v2 v0.0.0-20210119021838-2bc6ad110469/go.mod h1:q6aCogTDBcW9MLecaxRwrQIVF1okJ/rhG64soNrk8KE=
+github.com/technoweenie/multipartstreamer v1.0.1 h1:XRztA5MXiR1TIRHxH2uNxXxaIkKQDeX7m2XsSOlQEnM=
+github.com/technoweenie/multipartstreamer v1.0.1/go.mod h1:jNVxdtShOxzAsukZwTSw6MDx5eUJoiEBsSvzDU9uzog=
 github.com/urfave/cli v1.22.5 h1:lNq9sAHXK2qfdI8W+GRItjCEkI+2oR4d+MEHy1CKXoU=
 github.com/urfave/cli v1.22.5/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
